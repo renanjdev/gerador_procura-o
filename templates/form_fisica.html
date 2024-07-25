@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Procuração - Pessoa Física</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .form-container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            width: 350px;
+        }
+        .form-container h1 {
+            font-size: 20px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .form-container form {
+            display: grid;
+            grid-gap: 10px;
+        }
+        .form-container label {
+            font-size: 14px;
+            color: #333;
+        }
+        .form-container input[type="text"],
+        .form-container select,
+        .form-container input[type="submit"],
+        .form-container button {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+            width: 100%;
+        }
+        .form-container input[type="submit"],
+        .form-container button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .form-container input[type="submit"]:hover,
+        .form-container button:hover {
+            background-color: #45a049;
+        }
+        .form-container .alert {
+            background-color: #f44336;
+            color: white;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+        }
+        .error {
+            border-color: #f44336;
+        }
+    </style>
+    <script>
+        function formatCPF(cpf) {
+            cpf = cpf.replace(/\D/g, ''); // Remove tudo o que não é dígito
+            cpf = cpf.replace(/(\d{3})(\d)/, '$1.$2'); // Coloca um ponto entre o terceiro e o quarto dígitos
+            cpf = cpf.replace(/(\d{3})(\d)/, '$1.$2'); // Coloca um ponto entre o sexto e o sétimo dígitos
+            cpf = cpf.replace(/(\d{3})(\d{1,2})$/, '$1-$2'); // Coloca um hífen entre o nono e o décimo dígitos
+            return cpf;
+        }
+
+        function formatCEP(cep) {
+            cep = cep.replace(/\D/g, ''); // Remove tudo o que não é dígito
+            cep = cep.replace(/(\d{5})(\d)/, '$1-$2'); // Coloca um hífen entre o quinto e o sexto dígitos
+            return cep;
+        }
+
+        function formatFields() {
+            let cpfField = document.getElementById('cpf_outorgante');
+            cpfField.value = formatCPF(cpfField.value);
+
+            let cepField = document.getElementById('cep_outorgante');
+            cepField.value = formatCEP(cepField.value);
+        }
+
+        function clearAddressFields() {
+            document.getElementById('rua_outorgante').value = '';
+            document.getElementById('bairro_outorgante').value = '';
+            document.getElementById('cidade_outorgante').value = '';
+            document.getElementById('estado_outorgante').value = '';
+        }
+
+        function autoCompleteAddress() {
+            let cep = document.getElementById('cep_outorgante').value.replace(/\D/g, '');
+            if (cep.length === 8) {
+                fetch(`https://viacep.com.br/ws/${cep}/json/`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (!data.erro) {
+                            document.getElementById('rua_outorgante').value = data.logradouro.toUpperCase();
+                            document.getElementById('bairro_outorgante').value = data.bairro.toUpperCase();
+                            document.getElementById('cidade_outorgante').value = data.localidade.toUpperCase();
+                            document.getElementById('estado_outorgante').value = data.uf.toUpperCase();
+                        } else {
+                            clearAddressFields();
+                            alert("CEP não encontrado.");
+                        }
+                    })
+                    .catch(error => {
+                        clearAddressFields();
+                        alert("Erro ao buscar CEP.");
+                    });
+            } else {
+                clearAddressFields();
+            }
+        }
+    </script>
+</head>
+<body>
+    <div class="form-container">
+        <h1>Dados do Outorgante</h1>
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div class="alert">
+                    {% for message in messages %}
+                        <p>{{ message }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+        <form method="POST" action="/generate">
+            <label for="nome_outorgante">Nome:</label>
+            <input type="text" id="nome_outorgante" name="nome_outorgante" value="{{ request.form.nome_outorgante }}" placeholder="Nome e sobrenome" required>
+
+            <label for="cpf_outorgante">CPF:</label>
+            <input type="text" id="cpf_outorgante" name="cpf_outorgante" value="{{ request.form.cpf_outorgante }}" placeholder="000.000.000-00" onblur="formatFields()" class="{{ 'error' if 'CPF inválido' in messages else '' }}" required>
+
+            <label for="cep_outorgante">CEP:</label>
+            <input type="text" id="cep_outorgante" name="cep_outorgante" value="{{ request.form.cep_outorgante }}" placeholder="00000-000" onblur="formatFields(); autoCompleteAddress();" class="{{ 'error' if 'CEP inválido' in messages else '' }}" required>
+
+            <label for="rua_outorgante">Endereço:</label>
+            <input type="text" id="rua_outorgante" name="rua_outorgante" value="{{ request.form.rua_outorgante }}" placeholder="Logradouro" required>
+
+            <label for="numero_outorgante">Nº:</label>
+            <input type="text" id="numero_outorgante" name="numero_outorgante" value="{{ request.form.numero_outorgante }}" placeholder="Número e complemento (se houver)" required>
+
+            <label for="bairro_outorgante">Bairro:</label>
+            <input type="text" id="bairro_outorgante" name="bairro_outorgante" value="{{ request.form.bairro_outorgante }}" placeholder="Bairro" required>
+
+            <label for="cidade_outorgante">Cidade:</label>
+            <input type="text" id="cidade_outorgante" name="cidade_outorgante" value="{{ request.form.cidade_outorgante }}" placeholder="Cidade" required>
+
+            <label for="estado_outorgante">Estado:</label>
+            <input type="text" id="estado_outorgante" name="estado_outorgante" value="{{ request.form.estado_outorgante }}" placeholder="Estado" required>
+
+            <label for="concessionaria">Concessionária:</label>
+            <input type="text" id="concessionaria" name="concessionaria" value="{{ request.form.concessionaria }}" placeholder="Concessionária" required>
+
+            <input type="submit" value="Gerar Procuração">
+            <button type="button" onclick="location.href='/'">Voltar ao Menu</button>
+        </form>
+    </div>
+</body>
+</html>

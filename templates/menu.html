@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Gerador de Procuração - RJ Projetos Elétricos</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .menu-container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            width: 350px;
+            text-align: center;
+        }
+        .menu-container h1 {
+            font-size: 20px;
+            margin-bottom: 20px;
+        }
+        .menu-container button {
+            padding: 10px 20px;
+            margin: 10px;
+            border: none;
+            border-radius: 5px;
+            background-color: #4CAF50;
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            font-size: 16px;
+        }
+        .menu-container button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <div class="menu-container">
+        <h1>Bem-vindo</h1>
+        <p>Escolha o tipo de procuração:</p>
+        <button onclick="location.href='/form_fisica'">Pessoa Física</button>
+        <button onclick="location.href='/form_juridica'">Pessoa Jurídica</button>
+    </div>
+</body>
+</html>
